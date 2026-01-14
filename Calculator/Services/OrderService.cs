@@ -18,6 +18,9 @@ public class OrderService
         if (quantity <= 0)
             throw new ArgumentException("Order quantity must be greater than zero.");
 
+        if (quantity > 50)
+            throw new ArgumentException("Cannot order more than 50 items at once.");
+
         // Bagimlilik uzerinden urunu getir
         var product = _inventoryRepository.GetProductById(productId);
 
