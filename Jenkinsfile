@@ -74,8 +74,8 @@ pipeline {
                             # Solution dosyasindan Test projesini cikarmak gerekebilir
                             dotnet sln TestAutomation.sln remove Calculator.Tests/Calculator.Tests.csproj || true
 
-                            # Degisiklikleri commit et
-                            git commit -m "Deploy to main: Removed test files"
+                            # Degisiklikleri commit et (Eger degisiklik varsa)
+                            git commit -m "Deploy to main: Removed test files" || echo "No changes to commit"
                             
                             # Degisiklikleri gonder
                             git push origin main
