@@ -84,7 +84,7 @@ public class OrderServiceTests
     [Fact]
     public void PlaceOrder_ShouldThrowException_WhenQuantityExceedsLimit()
     {
-        // Act & Assert
+        // Act & Assert burada bir deneme yaptım
         var exception = Assert.Throws<ArgumentException>(() => _orderService.PlaceOrder(1, 51));
         Assert.Contains("Cannot order more than 50 items", exception.Message);
     }
