@@ -35,7 +35,7 @@ public class OrderService
             throw new Exception("Failed to update stock in database.");
 
         // Toplam tutari don (BILEREK HATA YAPIYORUZ)
-        return product.Price + quantity;
+        return product.Price * quantity;
         
     }
 }
