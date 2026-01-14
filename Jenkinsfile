@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'mcr.microsoft.com/dotnet/sdk:8.0'
+            args '-u root'
+        }
+    }
 
     environment {
         DOTNET_CLI_TELEMETRY_OPTOUT = '1'
@@ -9,11 +14,9 @@ pipeline {
     stages {
         stage('Test') {
             steps {
-                // Jenkins sunucusunda .NET kurulu oldugu varsayiliyor
-                // PATH sorunlarini asmak icin tam yol kullaniyoruz
-                sh '/opt/homebrew/bin/dotnet restore'
-                sh '/opt/homebrew/bin/dotnet build --no-restore --configuration Release'
-                sh '/opt/homebrew/bin/dotnet test --no-build --configuration Release --logger "trx;LogFileName=test-results.trx"'
+                sh 'dotnet restore'
+                sh 'dotnet build --no-restore --configuration Release'
+                sh 'dotnet test --no-build --configuration Release --logger "trx;LogFileName=test-results.trx"'
             }
             post {
                 always {
