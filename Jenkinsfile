@@ -1,29 +1,20 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'mcr.microsoft.com/dotnet/sdk:8.0'
+            // Docker konteynerinin root kullanicisi olarak calismasini saglar (izin sorunlarini onler)
+            args '-u root:root'
+        }
+    }
 
     environment {
         DOTNET_CLI_TELEMETRY_OPTOUT = '1'
         DOTNET_NOLOGO = 'true'
-        // Dotnet'i yerel klasore kuracagiz
-        DOTNET_ROOT = "${env.WORKSPACE}/.dotnet"
-        // Tools klasorunu de PATH'e ekliyoruz
-        PATH = "${env.WORKSPACE}/.dotnet:${env.WORKSPACE}/.dotnet/tools:${env.PATH}"
+        // Docker icinde tool path'i
+        PATH = "$PATH:/root/.dotnet/tools"
     }
 
     stages {
-        stage('Setup .NET') {
-            steps {
-                sh '''
-                    # .NET yukleme scriptini indir
-                    curl -sSL https://dot.net/v1/dotnet-install.sh > dotnet-install.sh
-                    chmod +x dotnet-install.sh
-                    
-                    # .NET 8 SDK'yi kur
-                    ./dotnet-install.sh --channel 8.0 --install-dir .dotnet
-                '''
-            }
-        }
-
         stage('Test') {
             steps {
                 sh 'dotnet --version'
@@ -32,7 +23,7 @@ pipeline {
                 sh 'dotnet test --no-build --configuration Release --logger "trx;LogFileName=test-results.trx"'
                 
                 // HTML Rapor Olusturucu (ReportGenerator) Kurulumu ve Calistirilmasi
-                sh 'dotnet tool install --tool-path .dotnet/tools dotnet-reportgenerator-globaltool || true'
+                sh 'dotnet tool install --global dotnet-reportgenerator-globaltool || true'
                 sh 'reportgenerator -reports:**/test-results.trx -targetdir:TestReport -reporttypes:Html'
             }
             post {
