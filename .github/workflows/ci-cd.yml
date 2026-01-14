@@ -38,7 +38,6 @@ jobs:
 
       - name: Run tests
         id: test
-        continue-on-error: true
         run: dotnet test --verbosity normal --logger "trx;LogFileName=test-results.trx" --logger "console;verbosity=detailed"
 
       - name: Upload test results
