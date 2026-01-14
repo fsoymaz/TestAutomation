@@ -1,14 +1,14 @@
 pipeline {
-    agent any
-
-    tools {
-        dotnet 'dotnet-sdk-8.0'
+    agent {
+        docker {
+            image 'mcr.microsoft.com/dotnet/sdk:8.0'
+            args '-u root' // Run as root to avoid permission issues in some setups
+        }
     }
 
     environment {
-        DOTNET_VERSION = '8.0'
-        PROJECT_PATH = 'Calculator'
-        TEST_PATH = 'Calculator.Tests'
+        DOTNET_CLI_TELEMETRY_OPTOUT = '1'
+        DOTNET_NOLOGO = 'true'
     }
 
     stages {
@@ -32,73 +32,28 @@ pipeline {
 
         stage('Test') {
             steps {
-                script {
-                    try {
-                        sh 'dotnet test --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=test-results.trx" --logger "console;verbosity=detailed"'
-                    } catch (Exception e) {
-                        // Test failures will be logged
-                        echo "Tests failed: ${e.getMessage()}"
-                        currentBuild.result = 'UNSTABLE'
-                    }
-                }
+                sh 'dotnet test --no-build --configuration Release --logger "trx;LogFileName=test-results.trx"'
             }
             post {
                 always {
-                    // Publish test results
-                    publishTestResults(
-                        testResultsPattern: '**/test-results.trx',
-                        testResultsFormat: 'MSTest',
-                        allowEmptyResults: true
-                    )
-                    
-                    // Archive test results
-                    archiveArtifacts artifacts: '**/test-results.trx', allowEmptyArchive: true
-                    
-                    // Publish HTML report if available
-                    publishHTML([
-                        reportDir: 'TestResults',
-                        reportFiles: 'index.html',
-                        reportName: 'Test Report',
-                        keepAll: true
-                    ])
-                }
-                failure {
-                    // Log failure details
-                    echo "Test execution failed. Check test results for details."
-                    script {
-                        def testLog = sh(
-                            script: 'cat **/test-results.trx | head -1000',
-                            returnStdout: true
-                        ).trim()
-                        
-                        echo """
-                        ============================================
-                        TEST FAILURE DETAILS
-                        ============================================
-                        ${testLog}
-                        ============================================
-                        """
-                    }
+                    // Requires "MSTest" or "JUnit" plugin in Jenkins
+                    mstest testResultsFile: '**/test-results.trx', keepLongStdio: true
                 }
             }
         }
 
-        stage('Deploy to Main') {
-            when {
-                expression { 
-                    env.BRANCH_NAME == 'test' && currentBuild.result == 'SUCCESS'
-                }
-            }
+        stage('Deploy') {
             steps {
                 script {
-                    // Merge test branch to main (requires appropriate permissions)
-                    sh '''
-                        git config user.name "Jenkins"
-                        git config user.email "jenkins@example.com"
-                        git checkout main
-                        git merge test --no-edit
-                        git push origin main
-                    '''
+                    // Credential ID '31' user tarafından oluşturuldu
+                    withCredentials([usernamePassword(credentialsId: '31', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
+                        sh """
+                            echo "Deploying with user: \${GIT_USER}"
+                            // Buraya git tag/push komutları gelebilir
+                            // git tag -a "v\${BUILD_NUMBER}" -m "Jenkins Build #\${BUILD_NUMBER}"
+                            // git push https://\${GIT_USER}:\${GIT_PASS}@github.com/fsoymaz/TestAutomation.git --tags
+                        """
+                    }
                 }
             }
         }
@@ -106,14 +61,7 @@ pipeline {
 
     post {
         always {
-            // Clean workspace
             cleanWs()
-        }
-        failure {
-            echo "Pipeline failed. Check logs for details."
-        }
-        unstable {
-            echo "Pipeline is unstable due to test failures."
         }
     }
 }

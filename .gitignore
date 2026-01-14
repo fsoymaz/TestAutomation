@@ -158,7 +158,7 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # VS Code directories
-.vscode/
+
 
 # macOS
 .DS_Store
