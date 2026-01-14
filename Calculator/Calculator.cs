@@ -11,7 +11,7 @@ public class Calculator
     public int Add(int a, int b)
     {
         // YANLIŞ: Toplama yerine çıkarma yapıyor - test fail etsin diye
-        return a + b;
+        return a - b;
     }
 }
 
