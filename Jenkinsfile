@@ -32,7 +32,10 @@ pipeline {
             }
             post {
                 always {
-                    // Test sonuclarini arsivle
+                    // Requires "MSTest" plugin in Jenkins
+                    mstest testResultsFile: '**/test-results.trx', keepLongStdio: true
+                    
+                    // Ayrica dosyayi da saklayalim
                     archiveArtifacts artifacts: '**/test-results.trx', allowEmptyArchive: true
                 }
             }
