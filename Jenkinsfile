@@ -31,8 +31,6 @@ pipeline {
                     
                     // TRX dosyasini ve yeni olusturdugumuz HTML rapor klasorunu arsivle
                     archiveArtifacts artifacts: '**/test-results.trx, TestReport/**/*', allowEmptyArchive: true
-                    
-                    cleanWs()
                 }
             }
         }
@@ -87,6 +85,9 @@ pipeline {
         }
     }
 
-
-}
+    post {
+        always {
+            cleanWs()
+        }
+    }
 
