@@ -10,8 +10,7 @@ public class Calculator
     /// <returns>Toplama sonucu (ama yanlışlıkla çıkarma yapıyor)</returns>
     public int Add(int a, int b)
     {
-        // YANLIŞ: Toplama yerine çıkarma yapıyor - test fail etsin diye
-        return a - b;
+        // Doğru toplama işlemi
+        return a + b;
     }
 }
-

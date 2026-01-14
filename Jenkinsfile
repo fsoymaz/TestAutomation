@@ -6,7 +6,8 @@ pipeline {
         DOTNET_NOLOGO = 'true'
         // Dotnet'i yerel klasore kuracagiz
         DOTNET_ROOT = "${env.WORKSPACE}/.dotnet"
-        PATH = "${env.WORKSPACE}/.dotnet:${env.PATH}"
+        // Tools klasorunu de PATH'e ekliyoruz
+        PATH = "${env.WORKSPACE}/.dotnet:${env.WORKSPACE}/.dotnet/tools:${env.PATH}"
     }
 
     stages {
@@ -29,14 +30,18 @@ pipeline {
                 sh 'dotnet restore'
                 sh 'dotnet build --no-restore --configuration Release'
                 sh 'dotnet test --no-build --configuration Release --logger "trx;LogFileName=test-results.trx"'
+                
+                // HTML Rapor Olusturucu (ReportGenerator) Kurulumu ve Calistirilmasi
+                sh 'dotnet tool install --tool-path .dotnet/tools dotnet-reportgenerator-globaltool || true'
+                sh 'reportgenerator -reports:**/test-results.trx -targetdir:TestReport -reporttypes:Html'
             }
             post {
                 always {
                     // Requires "MSTest" plugin in Jenkins
                     mstest testResultsFile: '**/test-results.trx', keepLongStdio: true
                     
-                    // Ayrica dosyayi da saklayalim
-                    archiveArtifacts artifacts: '**/test-results.trx', allowEmptyArchive: true
+                    // TRX dosyasini ve yeni olusturdugumuz HTML rapor klasorunu arsivle
+                    archiveArtifacts artifacts: '**/test-results.trx, TestReport/**/*', allowEmptyArchive: true
                 }
             }
         }
