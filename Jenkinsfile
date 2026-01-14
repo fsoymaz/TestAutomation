@@ -1,19 +1,31 @@
 pipeline {
-    agent {
-        docker {
-            image 'mcr.microsoft.com/dotnet/sdk:8.0'
-            args '-u root'
-        }
-    }
+    agent any
 
     environment {
         DOTNET_CLI_TELEMETRY_OPTOUT = '1'
         DOTNET_NOLOGO = 'true'
+        // Dotnet'i yerel klasore kuracagiz
+        DOTNET_ROOT = "${env.WORKSPACE}/.dotnet"
+        PATH = "${env.WORKSPACE}/.dotnet:${env.PATH}"
     }
 
     stages {
+        stage('Setup .NET') {
+            steps {
+                sh '''
+                    # .NET yukleme scriptini indir
+                    curl -sSL https://dot.net/v1/dotnet-install.sh > dotnet-install.sh
+                    chmod +x dotnet-install.sh
+                    
+                    # .NET 8 SDK'yi kur
+                    ./dotnet-install.sh --channel 8.0 --install-dir .dotnet
+                '''
+            }
+        }
+
         stage('Test') {
             steps {
+                sh 'dotnet --version'
                 sh 'dotnet restore'
                 sh 'dotnet build --no-restore --configuration Release'
                 sh 'dotnet test --no-build --configuration Release --logger "trx;LogFileName=test-results.trx"'
