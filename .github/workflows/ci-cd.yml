@@ -38,8 +38,8 @@ jobs:
 
       - name: Run tests
         id: test
-        run: dotnet test --verbosity normal --logger "trx;LogFileName=test-results.trx" --logger "console;verbosity=detailed"
         continue-on-error: true
+        run: dotnet test --verbosity normal --logger "trx;LogFileName=test-results.trx" --logger "console;verbosity=detailed"
 
       - name: Upload test results
         if: always()
