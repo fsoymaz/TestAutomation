@@ -61,16 +61,17 @@ pipeline {
                             git pull origin main
                             
                             # Test branch'ini merge et (commit yapmadan, duzenleme icin)
-                            git merge origin/test --no-commit --no-ff
+                            # Eger cakisma olursa (conflict), devam et (|| true)
+                            git merge origin/test --no-commit --no-ff || true
                             
-                            # Test projesini ve CI dosyalarini main branch'ten sil
-                            git rm -r Calculator.Tests || true
-                            git rm Jenkinsfile || true
-                            git rm README_JENKINS.md || true
-                            git rm .gitignore || true
+                            # Cakisma olan veya olmayan tum test dosyalarini ZORLA sil
+                            # Bu adim merge conflict durumunu da cozer (silme yonunde)
+                            git rm -rf Calculator.Tests || true
+                            git rm -f Jenkinsfile || true
+                            git rm -f README_JENKINS.md || true
+                            git rm -f .gitignore || true
                             
-                            # Solution dosyasindan Test projesini cikarmak gerekebilir ama simdilik dosyayi silmek yeterli
-                            # (Solution dosyasi bozuk kalabilir, idealde `dotnet sln remove` yapmak lazim)
+                            # Solution dosyasindan Test projesini cikarmak gerekebilir
                             dotnet sln TestAutomation.sln remove Calculator.Tests/Calculator.Tests.csproj || true
 
                             # Degisiklikleri commit et
