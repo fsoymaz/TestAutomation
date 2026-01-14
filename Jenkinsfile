@@ -9,14 +9,11 @@ pipeline {
     stages {
         stage('Test') {
             steps {
-                // Docker Pipeline eklentisi olmadigi icin manuel docker run kullaniyoruz
-                sh '''
-                    docker run --rm -v $(pwd):/app -w /app mcr.microsoft.com/dotnet/sdk:8.0 /bin/sh -c "
-                        dotnet restore &&
-                        dotnet build --no-restore --configuration Release &&
-                        dotnet test --no-build --configuration Release --logger 'trx;LogFileName=test-results.trx'
-                    "
-                '''
+                // Jenkins sunucusunda .NET kurulu oldugu varsayiliyor
+                // PATH sorunlarini asmak icin tam yol kullaniyoruz
+                sh '/opt/homebrew/bin/dotnet restore'
+                sh '/opt/homebrew/bin/dotnet build --no-restore --configuration Release'
+                sh '/opt/homebrew/bin/dotnet test --no-build --configuration Release --logger "trx;LogFileName=test-results.trx"'
             }
             post {
                 always {
