@@ -34,7 +34,7 @@ public class OrderService
         if (!updateResult)
             throw new Exception("Failed to update stock in database.");
 
-        // Toplam tutari don (BILEREK HATA YAPIYORUZ: Carpma yerine toplama)
-        return product.Price + quantity;
+        // Toplam tutari don
+        return product.Price * quantity;
     }
 }
