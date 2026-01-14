@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "gHD81ej0BcA=",
+  "success": true,
+  "projectFilePath": "/Users/fatihsoymaz/Desktop/TestAutomation/Calculator/Calculator.csproj",
+  "expectedPackageFiles": [
+    "/Users/fatihsoymaz/.nuget/packages/microsoft.netcore.app.ref/8.0.18/microsoft.netcore.app.ref.8.0.18.nupkg.sha512",
+    "/Users/fatihsoymaz/.nuget/packages/microsoft.aspnetcore.app.ref/8.0.18/microsoft.aspnetcore.app.ref.8.0.18.nupkg.sha512"
+  ],
+  "logs": []
+}

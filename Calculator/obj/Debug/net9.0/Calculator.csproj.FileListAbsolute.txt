@@ -1,0 +1,12 @@
+/Users/fatihsoymaz/Desktop/TestAutomation/Calculator/bin/Debug/net9.0/Calculator.deps.json
+/Users/fatihsoymaz/Desktop/TestAutomation/Calculator/bin/Debug/net9.0/Calculator.dll
+/Users/fatihsoymaz/Desktop/TestAutomation/Calculator/bin/Debug/net9.0/Calculator.pdb
+/Users/fatihsoymaz/Desktop/TestAutomation/Calculator/obj/Debug/net9.0/Calculator.GeneratedMSBuildEditorConfig.editorconfig
+/Users/fatihsoymaz/Desktop/TestAutomation/Calculator/obj/Debug/net9.0/Calculator.AssemblyInfoInputs.cache
+/Users/fatihsoymaz/Desktop/TestAutomation/Calculator/obj/Debug/net9.0/Calculator.AssemblyInfo.cs
+/Users/fatihsoymaz/Desktop/TestAutomation/Calculator/obj/Debug/net9.0/Calculator.csproj.CoreCompileInputs.cache
+/Users/fatihsoymaz/Desktop/TestAutomation/Calculator/obj/Debug/net9.0/Calculator.sourcelink.json
+/Users/fatihsoymaz/Desktop/TestAutomation/Calculator/obj/Debug/net9.0/Calculator.dll
+/Users/fatihsoymaz/Desktop/TestAutomation/Calculator/obj/Debug/net9.0/refint/Calculator.dll
+/Users/fatihsoymaz/Desktop/TestAutomation/Calculator/obj/Debug/net9.0/Calculator.pdb
+/Users/fatihsoymaz/Desktop/TestAutomation/Calculator/obj/Debug/net9.0/ref/Calculator.dll
