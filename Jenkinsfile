@@ -71,8 +71,21 @@ pipeline {
                             git checkout main || git checkout -b main origin/main
                             git pull origin main
                             
-                            # Test branch'ini merge et
-                            git merge origin/test --no-edit
+                            # Test branch'ini merge et (commit yapmadan, duzenleme icin)
+                            git merge origin/test --no-commit --no-ff
+                            
+                            # Test projesini ve CI dosyalarini main branch'ten sil
+                            git rm -r Calculator.Tests || true
+                            git rm Jenkinsfile || true
+                            git rm README_JENKINS.md || true
+                            git rm .gitignore || true
+                            
+                            # Solution dosyasindan Test projesini cikarmak gerekebilir ama simdilik dosyayi silmek yeterli
+                            # (Solution dosyasi bozuk kalabilir, idealde `dotnet sln remove` yapmak lazim)
+                            dotnet sln TestAutomation.sln remove Calculator.Tests/Calculator.Tests.csproj || true
+
+                            # Degisiklikleri commit et
+                            git commit -m "Deploy to main: Removed test files"
                             
                             # Degisiklikleri gonder
                             git push origin main
