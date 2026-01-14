@@ -35,49 +35,68 @@ pipeline {
             }
         }
 
-        stage('Deploy to Main') {
+        stage('Promote to Test') {
             when {
-                expression {
-                    // Sadece test branch'inde ve testler basariliysa calisir
-                    env.BRANCH_NAME == 'test' || env.GIT_BRANCH == 'origin/test'
-                }
+                branch 'feature/*'
             }
             steps {
                 script {
+                    // Kullanicidan onay bekle (GitLab'deki Play butonu gibi)
+                    input message: 'Test ortamına (test branch) merge edilsin mi?', ok: 'Evet, Merge Et'
+                    
                     withCredentials([usernamePassword(credentialsId: '31', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
                         sh """
-                            # Git kimlik bilgilerini ayarla
                             git config user.email "jenkins@testautomation.com"
                             git config user.name "Jenkins CI"
-                            
-                            # Remote URL'yi guncelle (sifreli erisim icin)
                             git remote set-url origin https://${GIT_USER}:${GIT_PASS}@github.com/fsoymaz/TestAutomation.git
                             
-                            # Guncel durumu cek
                             git fetch origin
                             
-                            # Main branch'e gec ve guncelle
+                            # Test branch'ine gec
+                            git checkout test || git checkout -b test origin/test
+                            git pull origin test
+                            
+                            # Mevcut feature branch'ini test'e merge et
+                            # env.BRANCH_NAME o an calisan branch'tir (orn: feature/max-order-limit)
+                            git merge origin/${env.BRANCH_NAME}
+                            
+                            # Degisiklikleri test branch'ine gonder
+                            git push origin test
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to Main') {
+            when {
+                branch 'test'
+            }
+            steps {
+                script {
+                    // Kullanicidan onay bekle
+                    input message: 'Canlı ortama (main branch) deploy edilsin mi?', ok: 'Evet, Deploy Et'
+                    
+                    withCredentials([usernamePassword(credentialsId: '31', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
+                        sh """
+                            git config user.email "jenkins@testautomation.com"
+                            git config user.name "Jenkins CI"
+                            git remote set-url origin https://${GIT_USER}:${GIT_PASS}@github.com/fsoymaz/TestAutomation.git
+                            
+                            git fetch origin
                             git checkout main || git checkout -b main origin/main
                             git pull origin main
                             
-                            # Test branch'ini merge et (commit yapmadan, duzenleme icin)
-                            # Eger cakisma olursa (conflict), devam et (|| true)
                             git merge origin/test --no-commit --no-ff || true
                             
-                            # Cakisma olan veya olmayan tum test dosyalarini ZORLA sil
-                            # Bu adim merge conflict durumunu da cozer (silme yonunde)
                             git rm -rf Calculator.Tests || true
                             git rm -f Jenkinsfile || true
                             git rm -f README_JENKINS.md || true
                             git rm -f .gitignore || true
                             
-                            # Solution dosyasindan Test projesini cikarmak gerekebilir
                             dotnet sln TestAutomation.sln remove Calculator.Tests/Calculator.Tests.csproj || true
 
-                            # Degisiklikleri commit et (Eger degisiklik varsa)
                             git commit -m "Deploy to main: Removed test files" || echo "No changes to commit"
-                            
-                            # Degisiklikleri gonder
                             git push origin main
                         """
                     }
