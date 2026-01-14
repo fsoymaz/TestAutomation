@@ -37,7 +37,10 @@ pipeline {
 
         stage('Promote to Test') {
             when {
-                branch 'feature/*'
+                // Branch isminde 'feature/' geciyorsa calis
+                expression {
+                    return env.GIT_BRANCH =~ /.*feature\/.*/
+                }
             }
             steps {
                 script {
@@ -57,8 +60,9 @@ pipeline {
                             git pull origin test
                             
                             # Mevcut feature branch'ini test'e merge et
-                            # env.BRANCH_NAME o an calisan branch'tir (orn: feature/max-order-limit)
-                            git merge origin/${env.BRANCH_NAME}
+                            # GIT_BRANCH 'origin/feature/...' formatinda olabilir, sadece ismini alalim
+                            # Basitce merge origin/feature/... diyebiliriz
+                            git merge ${env.GIT_BRANCH}
                             
                             # Degisiklikleri test branch'ine gonder
                             git push origin test
@@ -70,7 +74,10 @@ pipeline {
 
         stage('Deploy to Main') {
             when {
-                branch 'test'
+                // Branch isminde 'test' geciyorsa calis
+                expression {
+                    return env.GIT_BRANCH =~ /.*test/
+                }
             }
             steps {
                 script {
