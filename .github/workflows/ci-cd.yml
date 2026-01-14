@@ -59,7 +59,7 @@ jobs:
           fail_on: "test failures"
 
       - name: Merge to main on success
-        if: steps.test.outcome == 'success' && github.ref == 'refs/heads/test' && github.event_name == 'push'
+        if: success() && github.ref == 'refs/heads/test' && github.event_name == 'push'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -69,7 +69,7 @@ jobs:
           git push origin main
 
       - name: Create issue on test failure
-        if: steps.test.outcome == 'failure' && github.ref == 'refs/heads/test' && github.event_name == 'push'
+        if: failure() && github.ref == 'refs/heads/test' && github.event_name == 'push'
         uses: actions/github-script@v7
         with:
           script: |
