@@ -32,8 +32,8 @@ pipeline {
             }
             post {
                 always {
-                    // Requires "MSTest" or "JUnit" plugin in Jenkins
-                    mstest testResultsFile: '**/test-results.trx', keepLongStdio: true
+                    // Test sonuclarini arsivle
+                    archiveArtifacts artifacts: '**/test-results.trx', allowEmptyArchive: true
                 }
             }
         }
