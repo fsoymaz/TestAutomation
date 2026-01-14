@@ -1,28 +1,28 @@
 pipeline {
-    agent {
-        docker {
-            image 'mcr.microsoft.com/dotnet/sdk:8.0'
-            // Docker konteynerinin root kullanicisi olarak calismasini saglar (izin sorunlarini onler)
-            args '-u root:root'
-        }
-    }
+    agent any
 
     environment {
-        // Docker icinde tool path'i (PATH'e ekliyoruz)
-        PATH = "/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin:${env.PATH}:/root/.dotnet/tools"
+        // Docker ve diger araclarin bulunabilmesi icin PATH'i guncelliyoruz
+        PATH = "/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin:${env.PATH}"
+        DOTNET_CLI_TELEMETRY_OPTOUT = '1'
+        DOTNET_NOLOGO = 'true'
     }
 
     stages {
         stage('Test') {
             steps {
-                sh 'dotnet --version'
-                sh 'dotnet restore'
-                sh 'dotnet build --no-restore --configuration Release'
-                sh 'dotnet test --no-build --configuration Release --logger "trx;LogFileName=test-results.trx"'
-                
-                // HTML Rapor Olusturucu (ReportGenerator) Kurulumu ve Calistirilmasi
-                sh 'dotnet tool install --global dotnet-reportgenerator-globaltool || true'
-                sh 'reportgenerator -reports:**/test-results.trx -targetdir:TestReport -reporttypes:Html'
+                // Docker konteyneri icinde manuel olarak komutlari calistiriyoruz
+                sh '''
+                    docker run --rm -v "${WORKSPACE}:/app" -w /app -u root:root mcr.microsoft.com/dotnet/sdk:8.0 /bin/sh -c "
+                        dotnet --version &&
+                        dotnet restore &&
+                        dotnet build --no-restore --configuration Release &&
+                        dotnet test --no-build --configuration Release --logger 'trx;LogFileName=test-results.trx' &&
+                        dotnet tool install --global dotnet-reportgenerator-globaltool || true &&
+                        export PATH=\"\$PATH:/root/.dotnet/tools\" &&
+                        reportgenerator -reports:**/test-results.trx -targetdir:TestReport -reporttypes:Html
+                    "
+                '''
             }
             post {
                 always {
@@ -32,7 +32,6 @@ pipeline {
                     // TRX dosyasini ve yeni olusturdugumuz HTML rapor klasorunu arsivle
                     archiveArtifacts artifacts: '**/test-results.trx, TestReport/**/*', allowEmptyArchive: true
                     
-                    // Temizlik (Docker icinde)
                     cleanWs()
                 }
             }
