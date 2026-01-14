@@ -8,10 +8,8 @@ pipeline {
     }
 
     environment {
-        DOTNET_CLI_TELEMETRY_OPTOUT = '1'
-        DOTNET_NOLOGO = 'true'
-        // Docker icinde tool path'i
-        PATH = "$PATH:/root/.dotnet/tools"
+        // Docker icinde tool path'i (PATH'e ekliyoruz)
+        PATH = "/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin:${env.PATH}:/root/.dotnet/tools"
     }
 
     stages {
@@ -33,6 +31,9 @@ pipeline {
                     
                     // TRX dosyasini ve yeni olusturdugumuz HTML rapor klasorunu arsivle
                     archiveArtifacts artifacts: '**/test-results.trx, TestReport/**/*', allowEmptyArchive: true
+                    
+                    // Temizlik (Docker icinde)
+                    cleanWs()
                 }
             }
         }
@@ -87,10 +88,6 @@ pipeline {
         }
     }
 
-    post {
-        always {
-            cleanWs()
-        }
-    }
+
 }
 
