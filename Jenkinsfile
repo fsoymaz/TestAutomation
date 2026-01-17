@@ -17,10 +17,10 @@ pipeline {
                         dotnet --version &&
                         dotnet restore &&
                         dotnet build --no-restore --configuration Release &&
-                        dotnet test --no-build --configuration Release --logger 'trx;LogFileName=test-results.trx' &&
+                        dotnet test --no-build --configuration Release --logger 'trx;LogFileName=test-results.trx' --collect:'XPlat Code Coverage' &&
                         dotnet tool install --global dotnet-reportgenerator-globaltool || true &&
                         export PATH=\"\$PATH:/root/.dotnet/tools\" &&
-                        reportgenerator -reports:**/test-results.trx -targetdir:TestReport -reporttypes:Html
+                        reportgenerator -reports:**/coverage.cobertura.xml -targetdir:TestReport -reporttypes:Html || echo 'INFO: No coverage report generated'
                     "
                 '''
             }
@@ -94,16 +94,19 @@ pipeline {
                             git checkout main || git checkout -b main origin/main
                             git pull origin main
                             
-                            git merge origin/test --no-commit --no-ff || true
+                            # Merge test branch - log if there are conflicts
+                            git merge origin/test --no-commit --no-ff || echo "WARNING: Merge had conflicts or no changes to merge"
                             
-                            git rm -rf Calculator.Tests || true
-                            git rm -f Jenkinsfile || true
-                            git rm -f README_JENKINS.md || true
-                            git rm -f .gitignore || true
+                            # Remove test-related files from production (ignore if not found)
+                            git rm -rf Calculator.Tests 2>/dev/null || echo "INFO: Calculator.Tests not found or already removed"
+                            git rm -f Jenkinsfile 2>/dev/null || echo "INFO: Jenkinsfile not found or already removed"
+                            git rm -f README_JENKINS.md 2>/dev/null || echo "INFO: README_JENKINS.md not found or already removed"
+                            # .gitignore is intentionally kept to prevent build artifacts from being committed
                             
-                            dotnet sln TestAutomation.sln remove Calculator.Tests/Calculator.Tests.csproj || true
+                            # Update solution file (ignore if already updated)
+                            dotnet sln TestAutomation.sln remove Calculator.Tests/Calculator.Tests.csproj 2>/dev/null || echo "INFO: Project reference already removed or not found"
 
-                            git commit -m "Deploy to main: Removed test files" || echo "No changes to commit"
+                            git commit -m "Deploy to main: Removed test files" || echo "INFO: No changes to commit"
                             git push origin main
                         """
                     }
@@ -118,4 +121,3 @@ pipeline {
         }
     }
 }
-// Trigger Jenkins
