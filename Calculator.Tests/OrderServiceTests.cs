@@ -84,8 +84,27 @@ public class OrderServiceTests
     [Fact]
     public void PlaceOrder_ShouldThrowException_WhenQuantityExceedsLimit()
     {
-        // Act & Assert burada bir deneme yaptım
+        // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => _orderService.PlaceOrder(1, 51));
         Assert.Contains("Cannot order more than 50 items", exception.Message);
+    }
+
+    [Fact]
+    public void PlaceOrder_ShouldThrowException_WhenUpdateStockFails()
+    {
+        // Arrange
+        int productId = 1;
+        int orderQuantity = 2;
+        var product = new Product { Id = productId, Name = "Laptop", Price = 1000, StockQuantity = 10 };
+
+        _mockRepo.Setup(repo => repo.GetProductById(productId)).Returns(product);
+        _mockRepo.Setup(repo => repo.UpdateStock(productId, It.IsAny<int>())).Returns(false);
+
+        // Act & Assert
+        var exception = Assert.Throws<Exception>(() => _orderService.PlaceOrder(productId, orderQuantity));
+        Assert.Contains("Failed to update stock", exception.Message);
+
+        // Verify UpdateStock was called
+        _mockRepo.Verify(repo => repo.UpdateStock(productId, 8), Times.Once);
     }
 }
